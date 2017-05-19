@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#wrap{
+				position: relative;
+			}
+			#wrap div{
+				position: absolute;
+				width: 100px;
+				height: 100px;
+				text-align: center;
+				line-height: 100px;
+				font-size: 40px;
+				border-radius: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="wrap"></div>
+		<script type="text/javascript">
+			//创建九宫格（3*3）
+			var oWrap = document.getElementById("wrap");
+			/*
+			var _obj = {
+				
+				createStruct:function(m,n){
+					
+				}
+				
+			}*/
+			
+			//第一个for循环是控制行的
+			for(var i = 0; i < 3; i++){
+				//第二个for循环是控制列的
+				 for(var j = 0; j < 3; j++){
+				 	
+				 	//创建节点，这个节点用div表示
+				 	var _node = document.createElement("div");
+				 	
+				 	
+				 	//js控制样式
+				 	
+				 	//对于每一行的各个div，left值和 列（j）相关,top值和行（i）相关
+				 	_node.style.left = j*100 + (j+1)*10 + "px";
+				 	
+				 	_node.style.top = i*100 + (i+1)*10 + "px";
+				 	
+				 	//每个节点 的颜色随机，考虑随机数取值，考虑rgb
+				 	
+				 	_node.style.background = "rgb("+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+","+Math.floor(Math.random()*256)+")";
+				 	
+				 	
+				 	//向wrap中添加节点
+				 	oWrap.appendChild(_node);
+
+				 }
+			}
+			
+			
+			//向节点中添加字符
+			
+			var arrChar = ["A","B","C","D","E","F","G","H","I"];
+			
+			var aNode = oWrap.getElementsByTagName("div");
+			
+			for(var i = 0; i < arrChar.length; i++){
+				
+				aNode[i].innerHTML = arrChar[i];
+				
+			}
+			
+			
+			//拖拽
+			
+			
+			for(var i = 0; i < aNode.length; i++){
+				
+				aNode[i].onmousedown = function(e){
+					
+					var evt = e || event;
+					var x = evt.offsetX;
+					var y = evt.offsetY;
+					var _this = this;
+					//由于在拖动过程中，原位置需要保留，此时克隆拖动对象放在原位置 
+					var cloneItem = this.cloneNode();
+
+					cloneItem.style.border = "1px dashed";					
+					
+					//在判断拖动对象和其他div位置大小时，包括和克隆对象的比较
+					
+					oWrap.replaceChild(cloneItem,this);
+					
+					oWrap.appendChild(this);
+					
+					//在拖动过程中，拖动对象在其他对象的上面显示
+					this.style.zIndex = 1;
+					
+					document.onmousemove = function(e){
+						var evt = e || event;
+						var _left = evt.clientX - x;
+						var _top = evt.clientY - y;
+						_this.style.left = _left + "px";
+						_this.style.top = _top + "px";
+						return false;
+					}
+					
+					document.onmouseup = function(){
+						document.onmousemove = null;
+						document.onmouseup = null;
+						
+						//交换位置
+						var minIndex = getMinIndex(_this);
+						console.log(minIndex);
+						//拖动对象放在距离它最小的元素的位置上
+						_this.style.left = aNode[minIndex].style.left;
+						_this.style.top = aNode[minIndex].style.top;
+						//具体拖动对象最小的元素放在拖动对象的初始位置上，及克隆对象所在的位置
+						aNode[minIndex].style.left = cloneItem.style.left;
+						
+						aNode[minIndex].style.top = cloneItem.style.top;
+						
+						//位置交换完成后，需把克隆对象清除
+						oWrap.removeChild(cloneItem);
+						
+					}
+					
+					
+				}
+				
+			}
+			
+			
+			
+			//getMinIndex方法，功能是取得当前拖动对象和其他div距离最小值的索引
+			
+			function getMinIndex(obj){
+				console.log(aNode.length);
+				var arr = [];
+				var newArr = [];
+				//循环中 aNode.length - 1的原因是拖动对象不和本身比较，否则最小值始终为0
+				//需要比较的元素是除拖动对象之外的元素以及那个克隆的对象，克隆对象在DOM结构中拖动对象初始位置
+				//拖动对象在DOM结构中的最后
+				for(var i = 0; i < aNode.length-1; i++){
+					var vw = obj.offsetLeft - aNode[i].offsetLeft;
+					var hw = obj.offsetTop - aNode[i].offsetTop;
+					var dis  = Math.sqrt(Math.pow(vw,2)+Math.pow(hw,2));
+					arr.push(dis);
+					newArr.push(dis);
+				}
+				//取数组总最小值 ，排序之后为arr[0];
+				arr.sort(function(a,b){
+					return a-b;
+				});
+				//找到最小值对应 的索引
+				var minIndex = newArr.indexOf(arr[0]);
+				
+				//var min = Math.min.apply(null,arr);取数组中最小值的另外一种方式
+				
+				return minIndex;
+				
+			}
+
+		</script>
+	</body>
+</html>
